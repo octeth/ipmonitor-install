@@ -10,7 +10,7 @@ Welcome to Ipmonitor installer.
 <br/>
 To install application you need to invoke bash script in such way:<br/>
 <code>
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/octeth/ipmonitor-install/main/installer.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/octeth/ipmonitor-install/master/installer.sh)"
 </code>
 <br/>
  It will create directory in /opt/ipmonitor, prepares docker and launchs the stack
