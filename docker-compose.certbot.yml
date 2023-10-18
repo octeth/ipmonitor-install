@@ -1,0 +1,27 @@
+version: "3"
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+    ports:
+      - 80:80
+    volumes:
+      - ./.docker/nginx/templates-certbot/certbot.conf.template:/etc/nginx/templates/default.conf.template
+      - ./.etc/letsencrypt:/etc/letsencrypt
+      - ./.docker/certbot/data:/var/www/certbot
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot:latest
+    depends_on:
+      - nginx
+    command: >-
+      certonly --webroot --webroot-path=/var/www/certbot
+      --email ${USER_EMAIL} --agree-tos --no-eff-email
+      -d ${APP_DOMAIN}
+#      --server https://acme-staging-v02.api.letsencrypt.org/directory --test-cert
+    volumes:
+      - ./.etc/letsencrypt:/etc/letsencrypt
+      - ./.docker/certbot/data:/var/www/certbot

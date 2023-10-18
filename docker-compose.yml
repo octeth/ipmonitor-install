@@ -1,0 +1,206 @@
+version: '3.9'
+services:
+
+  nginx:
+    image: ipmonitor/nginx:${APP_VERSION:-latest}
+    build:
+      context: .
+      target: nginx-server
+    ports:
+      - ${NGINX_HTTP:-80}:80
+      - ${NGINX_HTTPS:-443}:443
+    environment:
+      FPM_HOST: php-fpm:9000
+      APP_DOMAIN: ${APP_DOMAIN}
+    depends_on:
+      - php-fpm
+    volumes:
+      - ./.etc/letsencrypt:/etc/letsencrypt:ro
+      - ./.docker/certbot/data:/var/www/certbot
+    restart: on-failure
+    networks:
+      - ipmonitor
+
+  certbot:
+    container_name: certbot
+    image: certbot/certbot:latest
+    depends_on:
+      - nginx
+    command: >-
+      certonly --reinstall --webroot --webroot-path=/var/www/certbot
+      --email ${USER_EMAIL} --server https://acme-staging-v02.api.letsencrypt.org/directory --test-cert --agree-tos --no-eff-email
+      -d ${APP_DOMAIN}
+    volumes:
+      - ./.etc/letsencrypt:/etc/letsencrypt
+      - ./.docker/certbot/data:/var/www/certbot
+
+  workspace:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    build:
+      context: .
+      target: php-workspace
+    user: ${CURRENT_UID}:www-data
+    command: [ /bin/bash ]
+    tty: true
+    stdin_open: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - ./.env:/var/www/app/.env
+    networks:
+      - ipmonitor
+
+  php-fpm:
+    image: ipmonitor/fpm:${APP_VERSION:-latest}
+    build:
+      context: .
+      target: php-fpm
+    user: www-data:www-data
+    depends_on:
+      - mysql
+      - redis
+    restart: on-failure
+    volumes:
+      - ./.env:/var/www/app/.env
+      - ./license.dat:/var/www/app/license.dat
+    networks:
+      - ipmonitor
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - ${FORWARD_DB_PORT:-3306}:3306
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - ipmonitor-mysql:/var/lib/mysql
+    restart: on-failure
+    networks:
+      - ipmonitor
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping" ]
+
+  redis:
+    image: redis:7.0.11
+    ports:
+      - ${FORWARD_REDIS_PORT:-6379}:6379
+    volumes:
+      - ipmonitor-redis:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+    restart: on-failure
+    networks:
+      - ipmonitor
+
+  dns-consumer:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    user: ${CURRENT_UID}:${CURRENT_GID}
+    command: php artisan dns:consume
+    depends_on:
+      - mysql
+      - redis
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "system-health:check" ]
+    volumes:
+      - ./.env:/var/www/app/.env
+    restart: unless-stopped
+    networks:
+      - ipmonitor
+
+  rdns-consumer:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    user: ${CURRENT_UID}:${CURRENT_GID}
+    command: php artisan rdns:consume
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./.env:/var/www/app/.env
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "system-health:check" ]
+    networks:
+      - ipmonitor
+
+  senderscore-consumer:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    user: ${CURRENT_UID}:${CURRENT_GID}
+    command: php artisan senderscore:consume
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./.env:/var/www/app/.env
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "system-health:check" ]
+    networks:
+      - ipmonitor
+
+  snds-consumer:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    user: ${CURRENT_UID}:${CURRENT_GID}
+    command: php artisan snds:consume
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./.env:/var/www/app/.env
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "system-health:check" ]
+    networks:
+      - ipmonitor
+
+  db-consumer:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    user: ${CURRENT_UID}:${CURRENT_GID}
+    command: php artisan db:consume
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./.env:/var/www/app/.env
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "system-health:check" ]
+    networks:
+      - ipmonitor
+
+  notifications-consumer:
+    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    build:
+      context: .
+      target: php-workspace
+    user: ${CURRENT_UID}:${CURRENT_GID}
+    command: php artisan ipm-notifications:consume
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./.env:/var/www/app/.env
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "php", "artisan", "system-health:check" ]
+    networks:
+      - ipmonitor
+
+networks:
+  ipmonitor:
+    driver: bridge
+
+volumes:
+  ipmonitor-mysql:
+    driver: local
+  ipmonitor-mysql-test:
+    driver: local
+  ipmonitor-redis:
+    driver: local

@@ -1,0 +1,1 @@
+* * * * * cd /opt/ipmonitor && sudo -E docker compose exec workspace php artisan schedule:run >> /dev/null 2>&1
