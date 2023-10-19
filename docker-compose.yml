@@ -27,7 +27,7 @@ services:
     depends_on:
       - nginx
     command: >-
-      certonly --webroot --webroot-path=/var/www/certbot
+      certonly --reinstall --webroot --webroot-path=/var/www/certbot
       --email ${USER_EMAIL} --agree-tos --no-eff-email
       -d ${APP_DOMAIN}
 #      --server https://acme-staging-v02.api.letsencrypt.org/directory --test-cert
