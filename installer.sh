@@ -50,7 +50,7 @@ else
   echo "Folder $APP_PATH chowned by current user: $(whoami)"
   cd $APP_PATH || exit
   echo "Switched to working directory"
-  git clone --branch install https://github.com/givqer/ipmonitor-install.git .
+  git clone --branch install https://github.com/octeth/ipmonitor-install.git .
   echo "Cloned installer files from public repository into $APP_PATH"
   cp .env.install .env
   echo ""
