@@ -3,11 +3,6 @@ export DEBIAN_FRONTEND=noninteractive
 
 APP_PATH="/opt/ipmonitor"
 DOCKER_REQ_VERSION="24"
-echo "This is debug info, as our dockerhub repo is private, we will remove it later when repos will be public"
-read -r -p "Please enter dockerhub username: " DOCKER_HUB_USERNAME
-echo "Please enter dockerhub access key: "
-read -rs  DOCKER_HUB_ACCESS_KEY
-
 echo ""
 echo ""
 
@@ -50,7 +45,7 @@ else
   echo "Folder $APP_PATH chowned by current user: $(whoami)"
   cd $APP_PATH || exit
   echo "Switched to working directory"
-  git clone --branch install https://github.com/givqer/ipmonitor-install.git .
+  git clone --branch install https://github.com/octeth/ipmonitor-install.git .
   echo "Cloned installer files from public repository into $APP_PATH"
   cp .env.install .env
   echo ""
@@ -112,9 +107,6 @@ if command -v docker &> /dev/null; then
     fi
         cd ${APP_PATH} || exit
 
-        ##########################Temporary solution#######################################
-        echo "$DOCKER_HUB_ACCESS_KEY" > ~/pass.txt
-        cat /home/ubuntu/pass.txt | sudo -E docker login https://index.docker.io/v1/ --username "$DOCKER_HUB_USERNAME" --password-stdin
         echo "Startup certbot to generate a certificates for your $APP_DOMAIN:"
         sudo -E make dc-certbot-install
         echo "Done"
