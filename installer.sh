@@ -114,7 +114,6 @@ if command -v docker &> /dev/null; then
 
         ##########################Temporary solution#######################################
         echo "$DOCKER_HUB_ACCESS_KEY" > ~/pass.txt
-       # cat /home/ubuntu/pass.txt | sudo -E docker login https://index.docker.io/v1/ --username alexbazdnc --password-stdin
         cat /home/ubuntu/pass.txt | sudo -E docker login https://index.docker.io/v1/ --username "$DOCKER_HUB_USERNAME" --password-stdin
         echo "Startup certbot to generate a certificates for your $APP_DOMAIN:"
         sudo -E make dc-certbot-install
@@ -124,7 +123,7 @@ if command -v docker &> /dev/null; then
         sudo -E make dc-first-install-app
         echo ""
         echo "Done"
-        echo "Please create firs user in the system:"
+        echo "Please create first user in the system:"
         sudo -E make dc-create-first-user
 
         echo "Setting up crontab:"
