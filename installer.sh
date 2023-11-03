@@ -116,10 +116,13 @@ if command -v docker &> /dev/null; then
         echo ""
         echo "Done"
         echo "Please create first user in the system:"
-        sudo -E make dc-create-first-user
+        sudo -E make dc-create-first-user USER_EMAIL=${USER_EMAIL}
 
         echo "Setting up crontab:"
         crontab -l 2>/dev/null; crontab ./.etc/crontab/ipmonitor
+
+        echo "Generating API documentation:"
+        sudo -E make dc-gen-api-docs
 
 fi
 

@@ -79,8 +79,7 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
       - ipmonitor-mysql:/var/lib/mysql
     restart: on-failure
@@ -200,8 +199,6 @@ networks:
 
 volumes:
   ipmonitor-mysql:
-    driver: local
-  ipmonitor-mysql-test:
     driver: local
   ipmonitor-redis:
     driver: local
