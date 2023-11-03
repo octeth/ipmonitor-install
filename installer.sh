@@ -121,9 +121,6 @@ if command -v docker &> /dev/null; then
         echo "Setting up crontab:"
         crontab -l 2>/dev/null; crontab ./.etc/crontab/ipmonitor
 
-        echo "Generating API documentation:"
-        sudo -E make dc-gen-api-docs
-
 fi
 
 echo ""
