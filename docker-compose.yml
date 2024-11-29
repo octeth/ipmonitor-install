@@ -2,7 +2,7 @@ version: '3.9'
 services:
 
   nginx:
-    image: ipmonitor/nginx:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_nginx:${APP_VERSION:-latest}
     build:
       context: .
       target: nginx-server
@@ -36,7 +36,7 @@ services:
       - ./.docker/certbot/data:/var/www/certbot
 
   workspace:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     build:
       context: .
       target: php-workspace
@@ -56,7 +56,7 @@ services:
       - ipmonitor
 
   php-fpm:
-    image: ipmonitor/fpm:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_fpm:${APP_VERSION:-latest}
     build:
       context: .
       target: php-fpm
@@ -101,7 +101,7 @@ services:
       - ipmonitor
 
   dns-consumer:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     user: ${CURRENT_UID}:${CURRENT_GID}
     command: php artisan dns:consume
     depends_on:
@@ -116,7 +116,7 @@ services:
       - ipmonitor
 
   rdns-consumer:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     user: ${CURRENT_UID}:${CURRENT_GID}
     command: php artisan rdns:consume
     depends_on:
@@ -131,7 +131,7 @@ services:
       - ipmonitor
 
   senderscore-consumer:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     user: ${CURRENT_UID}:${CURRENT_GID}
     command: php artisan senderscore:consume
     depends_on:
@@ -146,7 +146,7 @@ services:
       - ipmonitor
 
   snds-consumer:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     user: ${CURRENT_UID}:${CURRENT_GID}
     command: php artisan snds:consume
     depends_on:
@@ -161,7 +161,7 @@ services:
       - ipmonitor
 
   db-consumer:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     user: ${CURRENT_UID}:${CURRENT_GID}
     command: php artisan db:consume
     depends_on:
@@ -176,7 +176,7 @@ services:
       - ipmonitor
 
   notifications-consumer:
-    image: ipmonitor/workspace:${APP_VERSION:-latest}
+    image: octeth/ipmonitor_workspace:${APP_VERSION:-latest}
     build:
       context: .
       target: php-workspace
